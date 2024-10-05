@@ -1,7 +1,30 @@
-CXX = g++
-CXXFLAGS = -Iinclude -Wall
+NAME = ft_scop
 
-all: main
+CC = c++
+CFLAGS = -Iinclude -Wall -lglfw -ldl -g
+RM = rm -rf
+SRCS = main.cpp \
+       src/glad.c
+OBJS = $(SRCS:.cpp=.o)
+OBJS := $(OBJS:.c=.o)
 
-main: main.cpp src/glad.c
-	$(CXX) $(CXXFLAGS) main.cpp src/glad.c -lglfw -ldl -o main
+all: $(NAME)
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+
+clean:
+	$(RM) $(OBJS)
+
+fclean: clean
+	$(RM) $(NAME)
+
+re: fclean all
+
+.PHONY: all clean fclean re
