@@ -1,6 +1,7 @@
 #include "include/ft_scop.h"
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "include/stb_image.h"
+// #include <GL/gl.h>
+// #include <GL/glext.h>
 
 
 // Vertex Shader Source
@@ -51,15 +52,6 @@ int checkShaderCompil(unsigned int shader, std::string shaderName, std::string e
     return 0;
 }
 
-int initShaders(const char **vertexShaderSource, const char **fragmentShaderSource)
-{
-    std::string tmp = loadShader(VERTEX_SHADER_PATH);
-    *vertexShaderSource = strdup(tmp.c_str());
-    std::string tmp2 = loadShader(FRAGMENT_SHADER_PATH);
-    *fragmentShaderSource = strdup(tmp2.c_str());
-    return 1;
-}
-
 int main() {
     // Initialize GLFW
     glfwInit();
@@ -67,10 +59,6 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
-    const char* vertexShaderSource = NULL;
-    const char* fragmentShaderSource = NULL;
-    initShaders(&vertexShaderSource, &fragmentShaderSource);
     
   
     // Create a window
@@ -88,23 +76,29 @@ int main() {
         return -1;
     }
 
+    Shader myShader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     // Set the viewport
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // Compile vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    if(checkShaderCompil(vertexShader, "VERTEX_SHADER", "COMPILATION"))
-        exit(1);
-
-
     // Define vertices
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
+   float vertices[] = {
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+    };
+
+    // float texCoords[] = {
+    //     0.0f, 0.0f,
+    //     1.0f, 0.0f,
+    //     0.5f, 1.0f
+
+    // };
+
+    unsigned int indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     // Create VBO
@@ -112,45 +106,65 @@ int main() {
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Compile fragment shader
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader (GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    if(checkShaderCompil(fragmentShader, "FRAGMENT_SHADER", "COMPILATION"))
-        exit(1);
-
-
-    // Attach shaders
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    if(checkShaderCompil(shaderProgram, "SHADER_PROGRAM", "LINK"))
-       exit(1);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+  
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+// Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
+    // Texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load("image.png", &width, &height, &nrChannels, 0);
+    unsigned int texture;
+        myShader.use();
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    glEnableVertexAttribArray(2); 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
-
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
         processInput(window);
 
+        glClearColor(0.3f, 0.7f, 0.6f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        myShader.use();
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indices);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

@@ -4,7 +4,9 @@ CC = c++
 CFLAGS = -Iinclude -Wall -lglfw -ldl -g
 RM = rm -rf
 SRCS = main.cpp \
-       src/glad.c
+       src/glad.c \
+	   src/Shader.cpp \
+	   include/stb_image.cpp
 OBJS = $(SRCS:.cpp=.o)
 OBJS := $(OBJS:.c=.o)
 
