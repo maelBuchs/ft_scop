@@ -5,6 +5,12 @@
 #include <cmath>
 
 bool mode = 0;
+bool firstMouse = true;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+float lastX = 400, lastY = 300;
+float yaw, pitch = 0;
+
 // #include <GL/gl.h>
 // #include <GL/glext.h>
 
@@ -22,6 +28,31 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+
+    if(firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.05f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    yaw += xoffset;
+    pitch += yoffset;
+    if(pitch > 89.0f)
+        pitch = 89.0f; 
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+}
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
  if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
@@ -36,9 +67,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void processInput(GLFWwindow *window, glm::vec3 *cameraPos, glm::vec3 *cameraFront, glm::vec3 *cameraUp, bool *mode)
 {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    float cameraSpeed = 5.0f * deltaTime; // adjust accordingly
+    
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    float cameraSpeed = 0.05f; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         *(cameraPos) += cameraSpeed * *(cameraFront);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -263,9 +298,18 @@ int main() {
     glm::mat4 view = glm::mat4(1.0f);
 
     int i = 0;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // float x, y , z = 0;
+    glfwSetCursorPosCallback(window, mouse_callback);
     while (!glfwWindowShouldClose(window)) {
+        
+
         processInput(window, &cameraPos, &cameraFront, &cameraUp, &mode);
+        glm::vec3 front;
+        front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+        front.y = sin(glm::radians(pitch));
+        front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+        cameraFront = glm::normalize(front);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         if (mode == 1)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
