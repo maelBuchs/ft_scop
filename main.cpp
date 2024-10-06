@@ -1,5 +1,6 @@
 #include "include/ft_scop.h"
 #include "include/stb_image.h"
+#include <cmath>
 // #include <GL/gl.h>
 // #include <GL/glext.h>
 
@@ -17,10 +18,23 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, float *x, float *y, float *z)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        *(x) = *x + 1;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        *(y) = *y + 1;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        *(x) = *x - 1;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        *(y) = *y - 1;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        *(z) = *z + 1;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        *(z) = *z - 1;
+
 }
 std::string loadShader(const char* filePath) {
     std::ifstream shaderFile(filePath);
@@ -83,10 +97,11 @@ int main() {
 
     // Define vertices
    float vertices[] = {
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+        // positions          // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
     };
 
     // float texCoords[] = {
@@ -97,8 +112,8 @@ int main() {
     // };
 
     unsigned int indices[] = {
-        0, 1, 2,
-        0, 2, 3
+        0, 1, 3,
+        1, 2, 3
     };
 
     // Create VBO
@@ -114,21 +129,24 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    // // Color attribute
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
 
     // Texture attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
 
     unsigned int EBO;
     glGenBuffers(1, &EBO);
+
+
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -155,18 +173,51 @@ int main() {
 
     glEnableVertexAttribArray(2); 
     // Main loop
-    while (!glfwWindowShouldClose(window)) {
-        processInput(window);
 
+
+    int i = 0;
+    float x, y , z = 0;
+    while (!glfwWindowShouldClose(window)) {
+        std::cout << x << std::endl;
+        processInput(window, &x, &y, &z);
+
+        glBindTexture(GL_TEXTURE_2D, texture);
         glClearColor(0.3f, 0.7f, 0.6f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         myShader.use();
-        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(z), glm::vec3(0.0f, 0.0f, 1.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), 1920.0f / 1080.0f, 0.1f, 100.0f);
+        
+        unsigned int modelLoc = glGetUniformLocation(myShader.ID, "model");
+        unsigned int viewLoc = glGetUniformLocation(myShader.ID, "view");
+        // int projectionLoc = glGetUniformLocation(myShader.ID, "projection");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(model));
+        myShader.setMat4("projection", projection);
+       
+       
+        // glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+        // glm::mat4 trans = glm::mat4(1.0f);
+        // trans = glm::rotate(trans, glm::radians(i + 1.0f), glm::vec3(0.0, 0.0, 1.0));
+        // trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));  
+        // unsigned int transformLoc = glGetUniformLocation(myShader.ID, "transform");
+        // glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indices);
         glfwSwapBuffers(window);
         glfwPollEvents();
+        if (i > 360)
+            i = 0;
+        i++;
     }
 
     // Clean up

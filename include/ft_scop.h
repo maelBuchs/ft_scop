@@ -9,6 +9,10 @@
 #include <sstream>
 #include <string.h>
 #include "stb_image.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 extern const char *vertexShaderSource;
 
 #define VERTEX_SHADER_PATH "shaders/vertex_shader.glsl"
