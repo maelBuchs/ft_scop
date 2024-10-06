@@ -2,7 +2,6 @@
 #include "include/glm/geometric.hpp"
 #include "include/stb_image.h"
 #include <GLFW/glfw3.h>
-#include <cmath>
 
 bool mode = 0;
 bool firstMouse = true;
@@ -10,10 +9,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float lastX = 400, lastY = 300;
 float yaw, pitch = 0;
-
-// #include <GL/gl.h>
-// #include <GL/glext.h>
-
+// float fov = 55.0f;
 
 // Vertex Shader Source
 // const char *vertexShaderSource = "#version 330 core\n"
@@ -28,9 +24,20 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+
+    if(cam->fov>= 1.0f && cam->fov <= 45.0f)
+        cam->fov -= yoffset;
+    if(cam->fov <= 1.0f)
+        cam->fov= 1.0f;
+    if(cam->fov >= 45.0f)
+        cam->fov = 1.0f;
+}
+
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
-
     if(firstMouse)
     {
         lastX = xpos;
@@ -65,7 +72,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 }
 
-void processInput(GLFWwindow *window, glm::vec3 *cameraPos, glm::vec3 *cameraFront, glm::vec3 *cameraUp, bool *mode)
+void processInput(GLFWwindow *window, Camera *myCam, bool *mode)
 {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
@@ -75,17 +82,16 @@ void processInput(GLFWwindow *window, glm::vec3 *cameraPos, glm::vec3 *cameraFro
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        *(cameraPos) += cameraSpeed * *(cameraFront);
+        myCam->goFront(cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        *(cameraPos) -= cameraSpeed * *(cameraFront);
+        myCam->goBack(cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        *(cameraPos) -= glm::normalize(glm::cross(*(cameraFront), *(cameraUp))) * cameraSpeed;
+        myCam->goLeft(cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        *(cameraPos) += glm::normalize(glm::cross(*(cameraFront), *(cameraUp))) * cameraSpeed;
+        myCam->goRight(cameraSpeed);
     glfwSetKeyCallback(window, keyCallback);
-   
-
 }
+
 std::string loadShader(const char* filePath) {
     std::ifstream shaderFile(filePath);
     
@@ -139,7 +145,8 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
+    Camera myCamera = Camera();
+    glfwSetWindowUserPointer(window, (void*) &myCamera);
     Shader myShader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     // Set the viewport
     glViewport(0, 0, 800, 600);
@@ -266,7 +273,7 @@ int main() {
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load("image.png", &width, &height, &nrChannels, 0);
     unsigned int texture;
-        myShader.use();
+    myShader.use();
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     if (data)
@@ -284,33 +291,31 @@ int main() {
     // Main loop
 
 
-    // glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    // glm::vec3 myCamera->getPos = glm::vec3(0.0f, 0.0f, 3.0f);
     // glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    // glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    // glm::vec3 cameraDirection = glm::normalize(myCamera->getPos - cameraTarget);
     // glm::vec3 up = glm::vec3(0.0f, 1.0f, 0,0f);
     // glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
     // glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
     // bool mode = 0;
      
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::mat4(1.0f);
 
     int i = 0;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // float x, y , z = 0;
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     while (!glfwWindowShouldClose(window)) {
         
 
-        processInput(window, &cameraPos, &cameraFront, &cameraUp, &mode);
+        processInput(window, &myCamera, &mode);
         glm::vec3 front;
-        front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-        front.y = sin(glm::radians(pitch));
-        front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-        cameraFront = glm::normalize(front);
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        myCamera.front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+        myCamera.front.y = sin(glm::radians(pitch));
+        myCamera.front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+        myCamera.front = glm::normalize(myCamera.front);
+        view = glm::lookAt(myCamera.pos, myCamera.pos + myCamera.front, myCamera.up);
         if (mode == 1)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         else
@@ -332,7 +337,7 @@ int main() {
         // model = glm::rotate(model, glm::radians(y), glm::vec3(0.0f, 1.0f, 0.0f));
         // model = glm::rotate(model, glm::radians(z), glm::vec3(0.0f, 0.0f, 1.0f));
         // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(glm::radians(45.0f), 1920.0f / 1080.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(myCamera.fov), 1920.0f / 1080.0f, 0.1f, 100.0f);
         
         unsigned int modelLoc = glGetUniformLocation(myShader.ID, "model");
         unsigned int viewLoc = glGetUniformLocation(myShader.ID, "view");

@@ -6,7 +6,9 @@ RM = rm -rf
 SRCS = main.cpp \
        src/glad.c \
 	   src/Shader.cpp \
-	   include/stb_image.cpp
+	   include/stb_image.cpp\
+	   src/Camera.cpp
+	   
 OBJS = $(SRCS:.cpp=.o)
 OBJS := $(OBJS:.c=.o)
 
