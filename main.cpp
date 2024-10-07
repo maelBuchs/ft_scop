@@ -103,9 +103,9 @@ int main() {
     }
 
     Camera myCamera = Camera();
+    Shader myShader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     
     glfwSetWindowUserPointer(window, (void*) &myCamera);
-    Shader myShader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     // Set the viewport
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -220,8 +220,6 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
     myShader.use();
     Texture texture("image.png");
 
@@ -229,9 +227,7 @@ int main() {
 
     glm::mat4 view = glm::mat4(1.0f);
 
-    int i = 0;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // float x, y , z = 0;
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     while (!glfwWindowShouldClose(window)) {
@@ -254,17 +250,10 @@ int main() {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
         myShader.use();
-
-
 
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
-        // model = glm::rotate(model, glm::radians(x), glm::vec3(1.0f, 0.0f, 0.0f));
-        // model = glm::rotate(model, glm::radians(y), glm::vec3(0.0f, 1.0f, 0.0f));
-        // model = glm::rotate(model, glm::radians(z), glm::vec3(0.0f, 0.0f, 1.0f));
-        // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         projection = glm::perspective(glm::radians(myCamera.fov), 1920.0f / 1080.0f, 0.1f, 100.0f);
         
         unsigned int modelLoc = glGetUniformLocation(myShader.ID, "model");
@@ -276,7 +265,7 @@ int main() {
         myShader.setMat4("projection", projection);
         glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
         glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::rotate(trans, glm::radians(i + 1.0f), glm::vec3(0.0, 0.0, 1.0));
+        trans = glm::rotate(trans, glm::radians(1.0f), glm::vec3(0.0, 0.0, 1.0));
         trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));  
         unsigned int transformLoc = glGetUniformLocation(myShader.ID, "transform");
         // glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
@@ -294,9 +283,6 @@ int main() {
         // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
         glfwSwapBuffers(window);
         glfwPollEvents();
-        if (i > 360)
-            i = 0;
-        i++;
     }
 
     // Clean up

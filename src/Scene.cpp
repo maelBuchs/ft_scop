@@ -9,9 +9,11 @@
 
 Texture::Texture(std::string path)
 {
+    stbi_set_flip_vertically_on_load(true);
     int nrChannels;
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
+    
     unsigned char *data = stbi_load("image.png", &width, &height, &nrChannels, 0);
 
     if (data)
