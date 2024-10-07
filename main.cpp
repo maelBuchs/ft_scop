@@ -9,68 +9,13 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float lastX = 400, lastY = 300;
 float yaw, pitch = 0;
-// float fov = 55.0f;
-
-// Vertex Shader Source
-// const char *vertexShaderSource = "#version 330 core\n"
-//     "layout (location = 0) in vec3 aPos;\n"
-//     "void main()\n"
-//     "{\n"
-//     "    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-//     "}\0";
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 
-    if(cam->fov>= 1.0f && cam->fov <= 45.0f)
-        cam->fov -= yoffset;
-    if(cam->fov <= 1.0f)
-        cam->fov= 1.0f;
-    if(cam->fov >= 45.0f)
-        cam->fov = 1.0f;
-}
-
-void mouse_callback(GLFWwindow *window, double xpos, double ypos)
-{
-    if(firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    float sensitivity = 0.05f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-    yaw += xoffset;
-    pitch += yoffset;
-    if(pitch > 89.0f)
-        pitch = 89.0f; 
-    if(pitch < -89.0f)
-        pitch = -89.0f;
-}
-
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
- if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
-    {
-        if(mode == 1)
-            (mode) = 0;
-        else
-            (mode) = 1;
-    }
-
-}
 
 void processInput(GLFWwindow *window, Camera *myCam, bool *mode)
 {
@@ -122,23 +67,34 @@ int checkShaderCompil(unsigned int shader, std::string shaderName, std::string e
     return 0;
 }
 
-int main() {
-    // Initialize GLFW
+void init()
+{
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+}
 
-    
-  
-    // Create a window
-    GLFWwindow *window = glfwCreateWindow(800, 600, "hello window", NULL, NULL);
+GLFWwindow *initWindow(int width, int height, const std::string name)
+{
+    GLFW *window = glfwCreateWindoww(width, height, name, NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        return NULL;
     }
     glfwMakeContextCurrent(window);
+    return window;
+}
+
+int main() {
+    // Initialize GLFW
+    init();
+  
+    // Create a window
+    GLFWwindow *window = initWindow(800, 600, "Window 1");
+    if (!window)
+        exit(1);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
