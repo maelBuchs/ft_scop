@@ -75,9 +75,9 @@ void init()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-GLFWwindow *initWindow(int width, int height, const std::string name)
+GLFWwindow *initWindow(int width, int height, const char* name)
 {
-    GLFW *window = glfwCreateWindoww(width, height, name, NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(width, height, name, NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -101,7 +101,9 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
     Camera myCamera = Camera();
+    
     glfwSetWindowUserPointer(window, (void*) &myCamera);
     Shader myShader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     // Set the viewport
@@ -153,13 +155,6 @@ int main() {
     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
-
-    // float texCoords[] = {
-    //     0.0f, 0.0f,
-    //     1.0f, 0.0f,
-    //     0.5f, 1.0f
-
-    // };
 
     unsigned int indices[] = {
         0, 1, 2,
@@ -227,34 +222,11 @@ int main() {
 
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load("image.png", &width, &height, &nrChannels, 0);
-    unsigned int texture;
     myShader.use();
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    Texture texture("image.png");
 
     glEnableVertexAttribArray(2); 
-    // Main loop
 
-
-    // glm::vec3 myCamera->getPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    // glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    // glm::vec3 cameraDirection = glm::normalize(myCamera->getPos - cameraTarget);
-    // glm::vec3 up = glm::vec3(0.0f, 1.0f, 0,0f);
-    // glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    // glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-    // bool mode = 0;
-     
     glm::mat4 view = glm::mat4(1.0f);
 
     int i = 0;
@@ -277,7 +249,7 @@ int main() {
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture.ID);
         glClearColor(0.3f, 0.7f, 0.6f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

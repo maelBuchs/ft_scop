@@ -11,7 +11,8 @@ SRCS = main.cpp \
        src/Shader.cpp \
        include/stb_image.cpp \
        src/Camera.cpp \
-	   src/callbacks.cpp
+	   src/callbacks.cpp \
+	   src/Scene.cpp
 	   
 OBJS = $(SRCS:.cpp=.o)
 OBJS := $(OBJS:.c=.o)

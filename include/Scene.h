@@ -8,6 +8,20 @@
 #include "glm/gtc/type_ptr.hpp"
 #include <iostream>
 #include <vector>
+#include "stb_image.h"
+// Texture
+
+class Texture {
+
+  public :
+    Texture(std::string path);
+    ~Texture();
+    unsigned int ID = 0;
+    int width;
+    int height;
+
+};
+
 
 // Mesh class
 typedef struct t_triangle {
@@ -17,33 +31,30 @@ typedef struct t_triangle {
 } Triangle;
 
 class Mesh {
-  
+  Mesh();
+  ~Mesh();
+
+  void addVertices(float x, float y, float z, float normal,float v, float n);
+  void removeVertices();
+  void addIndices(int a, int b, int c);
   std::vector<Triangle> triangles;
   std::vector<glm::vec3> indices;
   glm::mat4 model = glm::mat4(1.0f);
   bool is_displayed;
+  Texture texture;
 };
 
-// Texture
-
-class Texture {
-  unsigned int ID;
-  unsigned int width;
-  unsigned int height;
-
-
-};
 
 
 // Light
 class Light{
-
+  Light();
+  ~Light();
 };
 
 // Scene
 class Scene {
 
-  std::vector<Triangle> triangles; 
   Scene();
   ~Scene();
   void addCamera(Camera *newCam);
