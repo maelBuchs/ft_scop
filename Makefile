@@ -1,6 +1,6 @@
 NAME = ft_scop
 
-CC = c++
+CC = clang++
 CFLAGS = -Iinclude -Wall -lglfw -ldl -g
 RM = rm -rf
 SRCS = main.cpp \
