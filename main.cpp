@@ -1,42 +1,4 @@
-#include <cstdint>
-#include <fstream>
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/trigonometric.hpp>
-#include <vector>
-#include <vulkan/vulkan_core.h>
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#include <algorithm>
-#include <array>
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
-#include <limits>
-#include <optional>
-#include <set>
-#include <stdexcept>
-
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
-const int MAX_FRAMES_IN_FLIGHT = 2;
-
-const std::vector<const char *> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"};
-
-const std::vector<const char *> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-#ifndef NDEBUG
-constexpr bool enableValidationLayers = false;
-#else
-constexpr bool enableValidationLayers = true;
-#endif
+#include "includes/Includes.h"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -48,47 +10,6 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 
   return VK_FALSE;
 }
-
-struct SwapChainSupportDetails {
-  VkSurfaceCapabilitiesKHR capabilities;
-  std::vector<VkSurfaceFormatKHR> formats;
-  std::vector<VkPresentModeKHR> presentModes;
-};
-
-struct Vertex {
-
-  glm::vec2 pos;
-  glm::vec3 color;
-
-  static VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return bindingDescription;
-  }
-  static std::array<VkVertexInputAttributeDescription, 2>
-  getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-    return attributeDescriptions;
-  }
-};
-
-struct UniformBufferObject {
-  glm::mat4 model;
-  glm::mat4 view;
-  glm::mat4 proj;
-};
 
 bool checkValidationLayerSupport() {
   uint32_t layerCount;
@@ -1359,41 +1280,56 @@ private:
   }
 
   // members
-
+  // Window
   GLFWwindow *_window;
-  VkInstance instance;
-  VkDebugUtilsMessengerEXT callback;
+  VkSurfaceKHR surface;
+  bool framebufferResized = false;
+
+  // Device
   VkPhysicalDevice physicalDevice;
   VkDevice device;
   VkQueue graphicsQueue;
-  VkBuffer vertexBuffer;
-  VkDeviceMemory vertexBufferMemory;
-  VkBuffer indexBuffer;
-  VkDeviceMemory indexBufferMemory;
-  std::vector<VkBuffer> uniformBuffers;
-  std::vector<VkDeviceMemory> uniformBuffersMemory;
-  VkSurfaceKHR surface;
   VkQueue presentQueue;
+
+  // SwapChain
   VkSwapchainKHR swapChain;
   VkExtent2D swapChainExtent;
-  VkRenderPass renderPass;
-  VkDescriptorSetLayout descriptorSetLayout;
-  VkPipelineLayout pipelineLayout;
-  VkPipeline graphicsPipeline;
-  VkCommandPool commandPool;
   VkFormat swapChainImageFormat;
-  VkDescriptorPool descriptorPool;
-  std::vector<VkDescriptorSet> descriptorSets;
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
   std::vector<VkFramebuffer> swapChainFramebuffers;
+
+  // Pipeline
+  VkRenderPass renderPass;
+  VkPipelineLayout pipelineLayout;
+  VkPipeline graphicsPipeline;
+  VkDescriptorSetLayout descriptorSetLayout;
+
+  // BufferManager
+  VkBuffer vertexBuffer;
+  VkDeviceMemory indexBufferMemory;
+  VkBuffer indexBuffer;
+  VkDeviceMemory vertexBufferMemory;
+  std::vector<VkBuffer> uniformBuffers;
+  std::vector<VkDeviceMemory> uniformBuffersMemory;
+
+  // DescriptorManager
+  VkDescriptorPool descriptorPool;
+  std::vector<VkDescriptorSet> descriptorSets;
+
+  // CommandManager
+  VkCommandPool commandPool;
   std::vector<VkCommandBuffer> commandBuffers;
+
+  // SyncObjects
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
   std::vector<VkFence> inFlightFences;
   std::vector<VkFence> imagesInFlight;
   size_t currentFrame = 0;
-  bool framebufferResized = false;
+
+  VkInstance instance;
+  VkDebugUtilsMessengerEXT callback;
   const std::vector<Vertex> vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
                                         {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
