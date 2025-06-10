@@ -2,7 +2,11 @@
 #include <cstdlib>
 
 int main(int ac, char **av) {
-  App app;
+  (void)ac;
+  if (ac != 4)
+    return 0;
+
+  App app = App(atoi(av[1]), atoi(av[2]), av[3]);
   try {
     app.run();
   } catch (const std::exception &e) {

@@ -1,14 +1,30 @@
-CFLAGS = -std=c++17 -O2
+NAME = ft_scop
+
+CC = clang++
+
 LDFLAGS = -g -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+CFLAGS = -std=c++17 -O2
+RM = rm -rf
+SRCS = 	newmain.cpp\
+		srcs/Window.cpp\
+srcs/App.cpp
+OBJS = $(SRCS:.cpp=.o)
 
-VulkanTest: main.cpp
-	$(CXX) $(CFLAGS) -o VulkanTest main.cpp $(LDFLAGS)
 
-.PHONY: test clean
+all: $(NAME)
 
-test: VulkanTest
-	./VulkanTest
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(NAME)
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f VulkanTest
-re: clean test
+	rm -f $(OBJS)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
+
+.PHONY: all clean fclean re

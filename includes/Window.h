@@ -5,13 +5,17 @@
 
 class Window {
 public:
-  Window();
+  Window(uint32_t width, uint32_t height, const std::string &title);
   ~Window();
+  void init();
 
 private:
-  Device device;
-  Scene scene;
-  GUI gui;
+  // Device device;
+  // Scene scene;
+  // GUI gui;
+
+  uint32_t width, height;
+  std::string title;
 
   GLFWwindow *window;
   VkSurfaceKHR surface;

@@ -4,9 +4,9 @@
 
 class App {
 public:
-  App();
+  App(uint32_t width, uint32_t height, std::string title);
   ~App();
-  void run() {}
+  void run();
 
 private:
   Window window;
