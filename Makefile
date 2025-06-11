@@ -3,11 +3,16 @@ NAME = ft_scop
 CC = clang++
 
 LDFLAGS = -g -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
-CFLAGS = -std=c++17 -O2
+CFLAGS = -std=c++17 -O2 -g
 RM = rm -rf
 SRCS = 	newmain.cpp\
 		srcs/Window.cpp\
-srcs/App.cpp
+srcs/App.cpp\
+srcs/Device.cpp\
+srcs/Renderer.cpp\
+srcs/Renderer/SwapChain.cpp\
+srcs/Utils.cpp
+
 OBJS = $(SRCS:.cpp=.o)
 
 

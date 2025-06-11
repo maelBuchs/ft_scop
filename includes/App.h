@@ -9,6 +9,8 @@ public:
   void run();
 
 private:
+  void createInstance();
+
   Window window;
 
   VkInstance instance;
