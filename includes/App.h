@@ -10,7 +10,12 @@ public:
 
 private:
   void createInstance();
-
+  void mainLoop();
+  void drawFrame();
+  void initRenderer();
+  void recreateSwapChain();
+  void cleanupSwapChain();
+  void cleanup();
   Window window;
 
   VkInstance instance;

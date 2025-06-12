@@ -2,13 +2,32 @@
 
 Renderer::Renderer() {}
 
-Renderer::~Renderer() {
-  // Cleanup code for Renderer
-  // This will typically involve destroying Vulkan objects created in the
-  // Renderer such as swap chain, pipeline, command buffers, etc.
-}
+Renderer::~Renderer() {}
 
-void Renderer::init(VkDevice device, VkPhysicalDevice VkPhysicalDevice,
-                    VkSurfaceKHR surface, GLFWwindow *window) {
-  swapChain.init(device, VkPhysicalDevice, surface, window);
+void Renderer::init(VkDevice device, VkPhysicalDevice physicalDevice,
+                    VkSurfaceKHR surface, GLFWwindow *window,
+                    VkQueue graphicsQueue) {
+  swapChain.init(device, physicalDevice, surface, window);
+  pipeline.init(device, swapChain.getSwapChainImageFormat(),
+                swapChain.getSwapChainExtent(), true);
+  swapChain.createFrameBuffers(device, pipeline.getRenderPass());
+  commandManager.init(device, physicalDevice, surface);
+  bufferManager.init(device, physicalDevice, commandManager.getCommandPool(),
+                     graphicsQueue, swapChain.getSwapChainImages());
+  std::cout << "Buffer Manager ok" << std::endl;
+  descriptorManager.init(
+      device, physicalDevice, pipeline.getDescriptorSetLayout(),
+      bufferManager.getUniformBuffers(), swapChain.getSwapChainImages(),
+      swapChain.getSwapChainImageViews());
+  std::cout << "Descriptor Manager ok" << std::endl;
+  commandManager.createCommandBuffers(
+      swapChain.getSwapChainFramebuffers(), pipeline.getRenderPass(),
+      pipeline.getGraphicsPipeline(), bufferManager.getVertexBuffer(),
+      bufferManager.getIndexBuffer(), pipeline.getPipelineLayout(),
+      descriptorManager.getDescriptorSets(), swapChain.getSwapChainExtent(),
+      device);
+  std::cout << "Command Manager ok" << std::endl;
+  syncObjects.init(device, swapChain.getSwapChainImages());
+  std::cout << "Sync Objects ok" << std::endl;
+  std::cout << "Renderer initialized successfully!" << std::endl;
 }

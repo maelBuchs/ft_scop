@@ -11,14 +11,15 @@ class Renderer {
 public:
   Renderer();
   ~Renderer();
-  void init(VkDevice device, VkPhysicalDevice VkPhysicalDevice,
-            VkSurfaceKHR surface, GLFWwindow *window);
+  void init(VkDevice device, VkPhysicalDevice physicalDevice,
+            VkSurfaceKHR surface, GLFWwindow *window, VkQueue graphicsQueue);
+
+  SwapChain swapChain;
+  Pipeline pipeline;
+  CommandManager commandManager;
+  DescriptorManager descriptorManager;
+  SyncObjects syncObjects;
+  BufferManager bufferManager;
 
 private:
-  SwapChain swapChain;
-  // Pipeline pipeline;
-  // CommandManager commandManager;
-  // DescriptorManager descriptorManager;
-  // SyncObjects syncObjects;
-  // BufferManager bufferManager;
 };
