@@ -24,7 +24,7 @@ void DescriptorManager::createDescriptorPool(
 
 void DescriptorManager::createDescriptorSet(
     VkDevice device, VkDescriptorSetLayout descriptorSetLayout,
-    std::vector<VkBuffer> uniformBuffers, std::vector<VkImage> swapChainImages,
+    BufferManager bufferManager, std::vector<VkImage> swapChainImages,
     std::vector<VkImageView> swapChainImageViews) {
   std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(),
                                              descriptorSetLayout);
@@ -36,6 +36,8 @@ void DescriptorManager::createDescriptorSet(
 
   descriptorSets.resize(swapChainImages.size());
 
+  std::vector<BufferInfo> uniformBuffers = bufferManager.getUniformBuffers();
+  
   if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
       VK_SUCCESS) {
     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
@@ -43,7 +45,7 @@ void DescriptorManager::createDescriptorSet(
 
   for (size_t i = 0; i < swapChainImageViews.size(); i++) {
     VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = uniformBuffers[i];
+    bufferInfo.buffer = uniformBuffers[i].buffer;
     bufferInfo.offset = 0;
     bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -63,11 +65,10 @@ void DescriptorManager::createDescriptorSet(
 
 void DescriptorManager::init(
     VkDevice device, VkPhysicalDevice physicalDevice,
-    VkDescriptorSetLayout descriptorSetLayout,
-    const std::vector<VkBuffer> &uniformBuffers,
+    VkDescriptorSetLayout descriptorSetLayout, BufferManager bufferManager,
     const std::vector<VkImage> &swapChainImages,
     const std::vector<VkImageView> &swapChainImageViews) {
   createDescriptorPool(device, swapChainImages);
-  createDescriptorSet(device, descriptorSetLayout, uniformBuffers,
+  createDescriptorSet(device, descriptorSetLayout, bufferManager,
                       swapChainImages, swapChainImageViews);
 }

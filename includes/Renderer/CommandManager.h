@@ -1,8 +1,7 @@
 #pragma once
 
 #include "../Libs.h"
-#include <vulkan/vulkan_core.h>
-
+#include "../Scene.h"
 class CommandManager {
 public:
   CommandManager();
@@ -10,13 +9,14 @@ public:
   void init(VkDevice device, VkPhysicalDevice physicalDevice,
             VkSurfaceKHR surface);
   VkCommandPool getCommandPool(void) { return commandPool; }
-  void createCommandBuffers(std::vector<VkFramebuffer> swapChainFramebuffers,
-                            VkRenderPass renderPass,
-                            VkPipeline graphicsPipeline, VkBuffer vertexBuffer,
-                            VkBuffer indexBuffer,
-                            VkPipelineLayout pipelineLayout,
-                            std::vector<VkDescriptorSet> descriptorSets,
-                            VkExtent2D swapChainExtent, VkDevice device);
+  void
+  createCommandBuffers(const std::vector<VkFramebuffer> &swapChainFramebuffers,
+                       VkRenderPass renderPass, VkPipeline graphicsPipeline,
+                       VkPipelineLayout pipelineLayout,
+                       const std::vector<VkDescriptorSet> &descriptorSets,
+                       VkExtent2D swapChainExtent, VkDevice device,
+                       const Scene &scene, BufferManager bufferManager);
+
   std::vector<VkCommandBuffer> getCommandBuffers() const {
     return commandBuffers;
   }

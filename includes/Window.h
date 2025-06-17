@@ -21,11 +21,10 @@ public:
   GLFWwindow *getGLFWWindow() { return window; }
   uint32_t getWidth() { return width; }
   uint32_t getHeight() { return height; }
-  
-  
+
   Device device;
   Renderer renderer;
-  // Scene scene;
+  Scene scene;
   // GUI gui;
 
 private:

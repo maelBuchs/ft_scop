@@ -12,7 +12,7 @@ DEBUG_LDFLAGS = -fsanitize=address -g -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf
 
 RM = rm -rf
 
-SRCS = 	newmain.cpp\
+SRCS = 	main.cpp\
 		srcs/Window.cpp\
 		srcs/App.cpp\
 		srcs/Device.cpp\
@@ -24,7 +24,8 @@ SRCS = 	newmain.cpp\
 		srcs/Renderer/DescriptorManager.cpp\
 		srcs/Renderer/SyncObjects.cpp\
 		srcs/AppLoop.cpp\
-		srcs/Utils.cpp
+		srcs/Utils.cpp\
+		srcs/Scene.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 DEBUG_OBJS = $(SRCS:.cpp=.debug.o)

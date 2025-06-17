@@ -9,46 +9,47 @@ void App::mainLoop() {
 }
 
 void App::recreateSwapChain() {
-  int width = 0, height = 0;
-  glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
-  while (width == 0 || height == 0) {
-    glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
-    glfwWaitEvents();
-  }
+  // int width = 0, height = 0;
+  // glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
+  // while (width == 0 || height == 0) {
+  //   glfwGetFramebufferSize(window.getGLFWWindow(), &width, &height);
+  //   glfwWaitEvents();
+  // }
 
-  vkDeviceWaitIdle(window.device.getDevice());
+  // vkDeviceWaitIdle(window.device.getDevice());
 
-  cleanupSwapChain();
+  // cleanupSwapChain();
 
-  window.renderer.swapChain.init(window.device.getDevice(),
-                                 window.device.getPhysicalDevice(),
-                                 window.getSurface(), window.getGLFWWindow());
-  window.renderer.pipeline.init(
-      window.device.getDevice(),
-      window.renderer.swapChain.getSwapChainImageFormat(),
-      window.renderer.swapChain.getSwapChainExtent(), false);
-  window.renderer.swapChain.createFrameBuffers(
-      window.device.getDevice(), window.renderer.pipeline.getRenderPass());
+  // window.renderer.swapChain.init(window.device.getDevice(),
+  //                                window.device.getPhysicalDevice(),
+  //                                window.getSurface(),
+  //                                window.getGLFWWindow());
+  // window.renderer.pipeline.init(
+  //     window.device.getDevice(),
+  //     window.renderer.swapChain.getSwapChainImageFormat(),
+  //     window.renderer.swapChain.getSwapChainExtent(), false);
+  // window.renderer.swapChain.createFrameBuffers(
+  //     window.device.getDevice(), window.renderer.pipeline.getRenderPass());
 
-  window.renderer.bufferManager.createUniformBuffers(
-      window.renderer.swapChain.getSwapChainImages(), window.device.getDevice(),
-      window.device.getPhysicalDevice());
-  window.renderer.descriptorManager.init(
-      window.device.getDevice(), window.device.getPhysicalDevice(),
-      window.renderer.pipeline.getDescriptorSetLayout(),
-      window.renderer.bufferManager.getUniformBuffers(),
-      window.renderer.swapChain.getSwapChainImages(),
-      window.renderer.swapChain.getSwapChainImageViews());
-  window.renderer.commandManager.createCommandBuffers(
-      window.renderer.swapChain.getSwapChainFramebuffers(),
-      window.renderer.pipeline.getRenderPass(),
-      window.renderer.pipeline.getGraphicsPipeline(),
-      window.renderer.bufferManager.getVertexBuffer(),
-      window.renderer.bufferManager.getIndexBuffer(),
-      window.renderer.pipeline.getPipelineLayout(),
-      window.renderer.descriptorManager.getDescriptorSets(),
-      window.renderer.swapChain.getSwapChainExtent(),
-      window.device.getDevice());
+  // window.renderer.bufferManager.createUniformBuffers(
+  //     window.renderer.swapChain.getSwapChainImages(),
+  //     window.device.getDevice(), window.device.getPhysicalDevice());
+  // window.renderer.descriptorManager.init(
+  //     window.device.getDevice(), window.device.getPhysicalDevice(),
+  //     window.renderer.pipeline.getDescriptorSetLayout(),
+  //     window.renderer.bufferManager.getUniformBuffers(),
+  //     window.renderer.swapChain.getSwapChainImages(),
+  //     window.renderer.swapChain.getSwapChainImageViews());
+  // window.renderer.commandManager.createCommandBuffers(
+  //     window.renderer.swapChain.getSwapChainFramebuffers(),
+  //     window.renderer.pipeline.getRenderPass(),
+  //     window.renderer.pipeline.getGraphicsPipeline(),
+  //     window.renderer.bufferManager.getVertexBuffer(),
+  //     window.renderer.bufferManager.getIndexBuffer(),
+  //     window.renderer.pipeline.getPipelineLayout(),
+  //     window.renderer.descriptorManager.getDescriptorSets(),
+  //     window.renderer.swapChain.getSwapChainExtent(),
+  //     window.device.getDevice());
 }
 
 void App::drawFrame() {
@@ -83,9 +84,13 @@ void App::drawFrame() {
   }
   syncObjects.getImagesInFlight()[imageIndex] =
       syncObjects.getInFlightFences()[syncObjects.getCurrentFrame()];
+  std::vector<BufferInfo> uniformBuffersID = bufferManager.getUniformBuffers();
+  std::vector<VkDeviceMemory> uniformBuffersMemory;
+  uniformBuffersMemory.reserve(uniformBuffersID.size());
 
-  std::vector<VkDeviceMemory> uniformBuffersMemory =
-      bufferManager.getUniformBuffersMemory();
+  for (const auto &buf : uniformBuffersID) {
+    uniformBuffersMemory.push_back(buf.memory);
+  }
   updateUniformBuffer(imageIndex, device.getDevice(),
                       swapChain.getSwapChainExtent(), uniformBuffersMemory);
 
@@ -142,4 +147,3 @@ void App::drawFrame() {
   vkQueueWaitIdle(device.getPresentQueue());
   syncObjects.incrementCurrentFrame(MAX_FRAMES_IN_FLIGHT);
 }
-

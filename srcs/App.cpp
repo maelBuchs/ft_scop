@@ -6,6 +6,7 @@ App::App(uint32_t width, uint32_t height, std::string title)
 App::~App() {}
 
 void App::initRenderer() {
+  window.scene.bufferManager = &window.renderer.bufferManager;
   createInstance();
   std::cout << "Instance created OK" << std::endl;
   window.createSurface(instance);
@@ -16,8 +17,9 @@ void App::initRenderer() {
   std::cout << "Logical device created OK" << std::endl;
   window.renderer.init(window.device.getDevice(),
                        window.device.getPhysicalDevice(), window.getSurface(),
-                       window.getGLFWWindow(),
-                       window.device.getGraphicsQueue());
+                       window.getGLFWWindow(), window.device.getGraphicsQueue(),
+                       window.scene,
+                       window.renderer.swapChain.getSwapChainImages());
 }
 
 void App::run() {
@@ -26,7 +28,7 @@ void App::run() {
   initRenderer();
   std::cout << "Renderer init OK" << std::endl;
   mainLoop();
-  // cleanup();
+  cleanup();
 }
 
 void App::cleanupSwapChain() {
@@ -59,12 +61,12 @@ void App::cleanupSwapChain() {
 
   auto uniformBuffers = window.renderer.bufferManager.getUniformBuffers();
 
-  for (size_t i = 0; i < uniformBuffers.size(); i++) {
-    vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-    vkFreeMemory(device,
-                 window.renderer.bufferManager.getUniformBuffersMemory()[i],
-                 nullptr);
-  }
+  // for (size_t i = 0; i < uniformBuffers.size(); i++) {
+  //   vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+  //   vkFreeMemory(device,
+  //                window.renderer.bufferManager.getUniformBuffersMemory()[i],
+  //                nullptr);
+  // }
   vkDestroyDescriptorPool(
       device, window.renderer.descriptorManager.getDescriptorPool(), nullptr);
 }
@@ -134,6 +136,5 @@ void App::cleanup() {
   vkDestroyInstance(instance, nullptr);
 
   glfwDestroyWindow(window.getGLFWWindow());
-
   glfwTerminate();
 }

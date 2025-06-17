@@ -1,0 +1,11 @@
+{
+   glfw_x11_still_reachable
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:_XlcDefaultMapModifiers
+   fun:XSetLocaleModifiers
+   fun:_glfwInitX11
+   fun:glfwInit
+}

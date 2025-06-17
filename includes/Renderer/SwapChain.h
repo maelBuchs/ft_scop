@@ -21,6 +21,7 @@ public:
     return swapChainFramebuffers;
   }
   void createFrameBuffers(VkDevice device, VkRenderPass renderPass);
+  int getImageCount() const { return swapChainImages.size(); }
 
 private:
   void createSwapChain(VkDevice device, VkPhysicalDevice physicalDevice,

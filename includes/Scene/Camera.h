@@ -4,8 +4,8 @@
 
 class Camera {
 public:
-  Camera();
-  ~Camera();
+  Camera() {};
+  ~Camera() {};
 
 private:
 };
