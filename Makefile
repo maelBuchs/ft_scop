@@ -1,34 +1,55 @@
 NAME = ft_scop
 
 CC = clang++
-CFLAGS = -Iinclude -Wall -lglfw -ldl -g
+
+# FLAGS CLASSIQUES
+CFLAGS = -std=c++17 -O2 -g
+LDFLAGS = -g -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+
+# FLAGS DEBUG (ASan)
+DEBUG_CFLAGS = -std=c++17 -O0 -g -fsanitize=address -fno-omit-frame-pointer
+DEBUG_LDFLAGS = -fsanitize=address -g -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+
 RM = rm -rf
-SRCS = main.cpp \
-       src/glad.c \
-	   src/Shader.cpp \
-	   include/stb_image.cpp\
-	   src/Camera.cpp
-	   
+
+SRCS = 	main.cpp\
+		srcs/Window.cpp\
+		srcs/App.cpp\
+		srcs/Device.cpp\
+		srcs/Renderer.cpp\
+		srcs/Renderer/SwapChain.cpp\
+		srcs/Renderer/Pipeline.cpp\
+		srcs/Renderer/CommandManager.cpp\
+		srcs/Renderer/BufferManager.cpp\
+		srcs/Renderer/DescriptorManager.cpp\
+		srcs/Renderer/SyncObjects.cpp\
+		srcs/AppLoop.cpp\
+		srcs/Utils.cpp\
+		srcs/Scene.cpp
+
 OBJS = $(SRCS:.cpp=.o)
-OBJS := $(OBJS:.c=.o)
+DEBUG_OBJS = $(SRCS:.cpp=.debug.o)
 
 all: $(NAME)
+
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(NAME)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+%.debug.o: %.cpp
+	$(CC) $(DEBUG_CFLAGS) -c $< -o $@
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+debug: $(DEBUG_OBJS)
+	$(CC) $(DEBUG_CFLAGS) $(DEBUG_LDFLAGS) $(DEBUG_OBJS) -o $(NAME)_debug
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJS) $(DEBUG_OBJS)
 
 fclean: clean
-	$(RM) $(NAME)
+	$(RM) $(NAME) $(NAME)_debug
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug
